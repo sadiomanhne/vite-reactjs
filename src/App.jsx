@@ -1,41 +1,27 @@
 
+import { useEffect, useState } from 'react';
 import './App.css'
 import Table from './component/Table';
 
-const tableData = [
-  {
-    "Company": "Alfreds Futterkiste",
-    "Contact": "Maria Anders",
-    "Country": "Germany"
-  },
-  {
-    "Company": "Centro comercial Moctezuma",
-    "Contact": "Francisco Chang",
-    "Country": "Mexico"
-  },
-  {
-    "Company": "Ernst Handel",
-    "Contact": "Roland Mendel",
-    "Country": "Austria"
-  },
-  {
-    "Company": "Island Trading",
-    "Contact": "Helen Bennett",
-    "Country": "UK"
-  },
-  {
-    "Company": "Laughing Bacchus Winecellars",
-    "Contact": "Yoshi Tannamuri",
-    "Country": "Canada"
-  },
-  {
-    "Company": "Magazzini Alimentari Riuniti",
-    "Contact": "Giovanni Rovelli",
-    "Country": "Italy"
-  }
-];
+
 
 function App() {
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://run.mocky.io/v3/d9870639-fb48-42dc-ada7-fd6ef256e938');
+        const data = await response.json();
+        setTableData(data);
+      } catch (error) {
+        console.error('Có lỗi:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <>
       <Table data={tableData} />
