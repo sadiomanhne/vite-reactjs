@@ -1,9 +1,6 @@
-
-import { useEffect, useState } from 'react';
-import './App.css'
-import Table from './component/Table';
-
-
+import { useEffect, useState } from "react";
+import "./App.css";
+import AntdTable from "./component/Table";
 
 function App() {
   const [tableData, setTableData] = useState([]);
@@ -11,11 +8,13 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('https://run.mocky.io/v3/d9870639-fb48-42dc-ada7-fd6ef256e938');
+        const response = await fetch(
+          "https://run.mocky.io/v3/d9870639-fb48-42dc-ada7-fd6ef256e938"
+        );
         const data = await response.json();
         setTableData(data);
       } catch (error) {
-        console.error('Có lỗi:', error);
+        console.error("Có lỗi:", error);
       }
     };
 
@@ -24,10 +23,9 @@ function App() {
 
   return (
     <>
-      <Table data={tableData} />
+      <AntdTable data={tableData} />
     </>
   );
 }
 
-
-export default App
+export default App;

@@ -1,24 +1,32 @@
-function Table({ data }) {
-    return (
-      <table>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>Contact</th>
-            <th>Country</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item, index) => (
-            <tr key={index}>
-              <td>{item.Company}</td>
-              <td>{item.Contact}</td>
-              <td>{item.Country}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  }
+import { Table } from "antd";
 
-export default Table;
+const AntdTable = ({ data }) => {
+  const columns = [
+    {
+      title: "Company",
+      dataIndex: "Company",
+      key: "company",
+    },
+    {
+      title: "Contact",
+      dataIndex: "Contact",
+      key: "contact",
+    },
+    {
+      title: "Country",
+      dataIndex: "Country",
+      key: "country",
+    },
+    
+  ];
+
+  return (
+    <Table
+      dataSource={data}
+      columns={columns}
+      rowKey={(record) => record.id || record.Company}
+    />
+  );
+};
+
+export default AntdTable;
