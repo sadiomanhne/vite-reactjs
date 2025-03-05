@@ -13,4 +13,8 @@ table {
   max-width: 100%;
 
 }
+.search-container{
+   display: flex;
+  justify-content: flex-end;
+}
 
