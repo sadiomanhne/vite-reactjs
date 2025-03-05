@@ -1,4 +1,4 @@
-import { Table } from "antd";
+import { Input, Table } from "antd";
 import { useEffect, useState } from "react";
 
 const AntdTable = () => {
@@ -8,14 +8,17 @@ const AntdTable = () => {
     pageSize: 10,
     total: 0, 
   });
-  const [loading, setLoading] = useState(false);
+  const Search = Input.Search;
 
-  const fetchData = async (page, pageSize) => {
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
+  const fetchData = async (page, pageSize, searchText) => {
     setLoading(true);
     const url = new URL("https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users");
     url.searchParams.append("page", page);
     url.searchParams.append("limit", pageSize);
-
+    url.searchParams.append("search", searchText);
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -25,7 +28,7 @@ const AntdTable = () => {
         const data = await response.json();
         setTableData(data);
        
-        setPagination((prev) => ({ ...prev, total: 50 })); 
+        setPagination((prev) => ({ ...prev, total: 50 }));
       } else {
         console.error("Error fetching data:", response.statusText);
       }
@@ -37,8 +40,8 @@ const AntdTable = () => {
   };
 
   useEffect(() => {
-    fetchData(pagination.current, pagination.pageSize); 
-  }, [pagination.current, pagination.pageSize]);
+    fetchData(pagination.current, pagination.pageSize,searchText); 
+  }, [pagination.current, pagination.pageSize, searchText]);
 
   const handleTableChange = (paginationConfig) => {
     setPagination((prev) => ({
@@ -49,6 +52,13 @@ const AntdTable = () => {
       
     }));
     
+  };
+  const handleSearch =(value)=>{
+    setSearchText(value);
+    setPagination((prev)=>({
+      ...prev,
+      current:1
+    }));
   };
 
   const columns = [
@@ -71,7 +81,16 @@ const AntdTable = () => {
   ];
    
   return (
-    <Table
+     <>
+    <div className="search-container">
+    <Search
+           placeholder="input search texts"
+           onSearch={handleSearch}
+           style={{marginBottom:20, width:300}}
+
+     />
+    </div>
+      <Table
       dataSource={tableData}
       columns={columns}
       rowKey="id"
@@ -84,6 +103,8 @@ const AntdTable = () => {
       loading={loading}
       onChange={handleTableChange}
     />
+     </>
+   
   );
 };
 
