@@ -1,21 +1,24 @@
-import { Input, Table } from "antd";
+import { Button, DatePicker, Form, Input, message, Modal, Table } from "antd";
 import { useEffect, useState } from "react";
-
+import axios from "axios";
 const AntdTable = () => {
   const [tableData, setTableData] = useState([]);
   const [pagination, setPagination] = useState({
-    current: 1, 
+    current: 1,
     pageSize: 10,
-    total: 0, 
+    total: 0,
   });
   const Search = Input.Search;
 
   const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
-
+  const [searchText, setSearchText] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
   const fetchData = async (page, pageSize, searchText) => {
     setLoading(true);
-    const url = new URL("https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users");
+    const url = new URL(
+      "https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users"
+    );
     url.searchParams.append("page", page);
     url.searchParams.append("limit", pageSize);
     url.searchParams.append("search", searchText);
@@ -27,8 +30,8 @@ const AntdTable = () => {
       if (response.ok) {
         const data = await response.json();
         setTableData(data);
-       
-        setPagination((prev) => ({ ...prev, total: 50 }));
+
+        setPagination((prev) => ({ ...prev, total: 80 }));
       } else {
         console.error("Error fetching data:", response.statusText);
       }
@@ -40,24 +43,22 @@ const AntdTable = () => {
   };
 
   useEffect(() => {
-    fetchData(pagination.current, pagination.pageSize,searchText); 
+    fetchData(pagination.current, pagination.pageSize, searchText);
   }, [pagination.current, pagination.pageSize, searchText]);
 
   const handleTableChange = (paginationConfig) => {
     setPagination((prev) => ({
       ...prev,
-     
+
       current: paginationConfig.current,
       pageSize: paginationConfig.pageSize,
-      
     }));
-    
   };
-  const handleSearch =(value)=>{
+  const handleSearch = (value) => {
     setSearchText(value);
-    setPagination((prev)=>({
+    setPagination((prev) => ({
       ...prev,
-      current:1
+      current: 1,
     }));
   };
 
@@ -77,34 +78,104 @@ const AntdTable = () => {
       dataIndex: "address",
       key: "address",
     },
-    
   ];
-   
-  return (
-     <>
-    <div className="search-container">
-    <Search
-           placeholder="input search texts"
-           onSearch={handleSearch}
-           style={{marginBottom:20, width:300}}
+  const handleSubmit = () => {
+    console.log('value', form.value);
+    
+    form
+      .validateFields()
+      .then((values) => {
+        console.log('values', values);
+        
+        axios
+          .post("https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users", values)
+          .then((response) => {
+            setTableData((prevData) => [...prevData, response.data]);
+            setPagination((prev) => ({ ...prev, total: prev.total + 1 }));
+            form.resetFields();
+            setIsModalVisible(false);
+            message.success("New added user successfully!", 1.5);
+          })
+          .catch((err) => {
+            console.error(err);
+            message.error("Failed to add user!", 1.5);
+          });
+      })
+      .catch((info) => {
+        console.log("Validate Failed:", info);
+      });
+  };
 
-     />
-    </div>
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  return (
+    <>
+      <div className="user-button">
+        <Button
+          style={{ marginBottom: 20 }}
+          type="primary"
+          onClick={() => setIsModalVisible(true)}
+        >
+          Add user
+        </Button>
+
+        <Search
+          placeholder="input search texts"
+          onSearch={handleSearch}
+          style={{ marginBottom: 20, width: 300 }}
+        />
+      </div>
       <Table
-      dataSource={tableData}
-      columns={columns}
-      rowKey="id"
-      pagination={{
-        current: pagination.current,
-        pageSize: pagination.pageSize,
-        total: pagination.total,
-        showSizeChanger: true,
-      }}
-      loading={loading}
-      onChange={handleTableChange}
-    />
-     </>
-   
+        dataSource={tableData}
+        columns={columns}
+        rowKey="id"
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          showSizeChanger: true,
+        }}
+        loading={loading}
+        onChange={handleTableChange}
+      />
+      <Modal
+        visible={isModalVisible}
+        onOk={handleSubmit}
+        onCancel={handleCancel}
+      >
+        <Form layout="vertical" form={form}>
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: "Please input the name!" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="address"
+            label="Address"
+            rules={[{ required: true, message: "Please input the address!" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="DatePicker"
+            name="DatePicker"
+            rules={[
+              {
+                required: true,
+                message: "Please input!",
+              },
+            ]}
+          >
+            <DatePicker />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
   );
 };
 
