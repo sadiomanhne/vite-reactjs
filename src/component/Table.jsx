@@ -13,6 +13,7 @@ const AntdTable = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
   const [form] = Form.useForm();
   const fetchData = async (page, pageSize, searchText) => {
     setLoading(true);
@@ -61,7 +62,71 @@ const AntdTable = () => {
       current: 1,
     }));
   };
+  const handleEdit = async (userId) => {
+    try {
+      const response = await axios.get(
+        `https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users/${userId}`
+      );
+      form.setFieldValue(response.data);
+      setEditingUserId(userId);
+      setIsModalVisible(true);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+  const handleSubmit = () => {
+    form
+      .validateFields()
+      .then((values) => {
+        if (editingUserId) {
+          axios
+            .put(
+              `https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users/${editingUserId}`,
+              values
+            )
+            .then((response) => {
+              const updateData = tableData.map((item) =>
+                item.id === editingUserId ? response.data : item
+              );
+              setTableData(updateData);
 
+              setEditingUserId(null);
+              setIsModalVisible(false);
+              message.success("Update user successfully!", 1.5);
+            })
+            .catch((err) => {
+              console.error(err);
+              message.error("Failed to update user!", 1.5);
+            });
+        } else {
+          axios
+            .post(
+              "https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users",
+              values
+            )
+            .then((response) => {
+              setTableData((prevData) => [...prevData, response.data]);
+              setPagination((prev) => ({ ...prev, total: prev.total + 1 }));
+              form.resetFields();
+              setIsModalVisible(false);
+              message.success("New added user successfully!", 1.5);
+            })
+            .catch((err) => {
+              console.error(err);
+              message.error("Failed to add user!", 1.5);
+            });
+        }
+      })
+      .catch((info) => {
+        console.log("Validate Failed:", info);
+      });
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setEditingUserId(null);
+    form.resetFields();
+  };
   const columns = [
     {
       title: "Name",
@@ -78,37 +143,13 @@ const AntdTable = () => {
       dataIndex: "address",
       key: "address",
     },
+    {
+      title: "Operation",
+      dataIndex: "",
+      key: "x",
+      render: (_, record) => <a onClick={() => handleEdit(record.id)}>Edit</a>,
+    },
   ];
-  const handleSubmit = () => {
-    console.log('value', form.value);
-    
-    form
-      .validateFields()
-      .then((values) => {
-        console.log('values', values);
-        
-        axios
-          .post("https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users", values)
-          .then((response) => {
-            setTableData((prevData) => [...prevData, response.data]);
-            setPagination((prev) => ({ ...prev, total: prev.total + 1 }));
-            form.resetFields();
-            setIsModalVisible(false);
-            message.success("New added user successfully!", 1.5);
-          })
-          .catch((err) => {
-            console.error(err);
-            message.error("Failed to add user!", 1.5);
-          });
-      })
-      .catch((info) => {
-        console.log("Validate Failed:", info);
-      });
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
 
   return (
     <>
