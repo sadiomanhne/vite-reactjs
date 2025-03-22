@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 const UserDetail = () => {
-  const { userId } = useParams(); // Lấy userId từ URL
-  const [user, setUser] = useState(null); // State lưu thông tin người dùng
-  const [loading, setLoading] = useState(true); // State xử lý trạng thái tải
-  const [error, setError] = useState(null); // State xử lý lỗi
+  const { userId } = useParams(); 
+  const [user, setUser] = useState(null); 
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Hàm gọi API để lấy thông tin người dùng
+    
     const fetchUser = async () => {
       try {
         const response = await fetch(
@@ -27,18 +27,18 @@ const UserDetail = () => {
     };
 
     fetchUser();
-  }, [userId]); // Chỉ gọi lại khi userId thay đổi
+  }, [userId]); 
 
   if (loading) {
-    return <h2>Loading...</h2>; // Hiển thị khi đang tải
+    return <h2>Loading...</h2>; 
   }
 
   if (error) {
-    return <h2>Error: {error}</h2>; // Hiển thị nếu có lỗi
+    return <h2>Error: {error}</h2>; 
   }
 
   if (!user) {
-    return <h2>User not found</h2>; // Hiển thị nếu không tìm thấy người dùng
+    return <h2>User not found</h2>; 
   }
 
   return (

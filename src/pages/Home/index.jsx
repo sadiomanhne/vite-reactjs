@@ -2,6 +2,7 @@ import { Button, DatePicker, Form, Input, message, Modal, Table } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import moment from "moment";
 const AntdTable = () => {
   const [tableData, setTableData] = useState([]);
   const [pagination, setPagination] = useState({
@@ -12,7 +13,7 @@ const AntdTable = () => {
   const navigate = useNavigate();
 
   const Search = Input.Search;
-  
+
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -70,12 +71,26 @@ const AntdTable = () => {
       const response = await axios.get(
         `https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users/${userId}`
       );
-      form.setFieldValue(response.data);
+
+      form.setFieldsValue({
+        name: response.data.name,
+        address: response.data.address,
+        dateOfBirth: response.data.dateOfBirth
+          ? moment(response.data.dateOfBirth)
+          : null,
+      });
+
       setEditingUserId(userId);
       setIsModalVisible(true);
     } catch (error) {
       console.error("Error fetching user data:", error);
+      message.error("Failed to fetch user data.", 1.5);
     }
+  };
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setEditingUserId(null);
+    form.resetFields();
   };
   const handleSubmit = () => {
     form
@@ -125,11 +140,6 @@ const AntdTable = () => {
       });
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setEditingUserId(null);
-    form.resetFields();
-  };
   const columns = [
     {
       title: "Name",
@@ -151,11 +161,10 @@ const AntdTable = () => {
       dataIndex: "",
       key: "x",
       render: (_, record) => {
-    
         const handleView = (id) => {
           navigate(`/user/${id}`);
         };
-    
+
         return (
           <>
             <a onClick={() => handleEdit(record.id)}>Edit</a> |{" "}
@@ -196,12 +205,14 @@ const AntdTable = () => {
         loading={loading}
         onChange={handleTableChange}
       />
+
       <Modal
         visible={isModalVisible}
         onOk={handleSubmit}
         onCancel={handleCancel}
+        title={editingUserId ? "Edit User" : "Add User"}
       >
-        <Form layout="vertical" form={form}>
+        <Form form={form} layout="vertical">
           <Form.Item
             name="name"
             label="Name"
@@ -218,16 +229,11 @@ const AntdTable = () => {
             <Input />
           </Form.Item>
           <Form.Item
-            label="DatePicker"
-            name="DatePicker"
-            rules={[
-              {
-                required: true,
-                message: "Please input!",
-              },
-            ]}
+            name="dateOfBirth"
+            label="Date of Birth"
+            rules={[{ required: true, message: "Please select a date!" }]}
           >
-            <DatePicker />
+            <DatePicker style={{ width: "100%" }} />
           </Form.Item>
         </Form>
       </Modal>
