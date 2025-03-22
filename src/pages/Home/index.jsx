@@ -3,69 +3,40 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import moment from "moment";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUsers, updatePagination, updateSearchText } from "../../redux/userSlice";
 const AntdTable = () => {
-  const [tableData, setTableData] = useState([]);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const Search = Input.Search;
 
-  const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState("");
+  const loading = useSelector((state) => state.users.loading);
+  const searchText = useSelector((state) => state.users.searchText);
+  const pagination = useSelector((state) => state.users.pagination);
+  const tableData = useSelector((state) => state.users.data);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingUserId, setEditingUserId] = useState(null);
   const [form] = Form.useForm();
-  const fetchData = async (page, pageSize, searchText) => {
-    setLoading(true);
-    const url = new URL(
-      "https://67bfced4b9d02a9f22474c36.mockapi.io/api/v1/users"
-    );
-    url.searchParams.append("page", page);
-    url.searchParams.append("limit", pageSize);
-    url.searchParams.append("search", searchText);
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: { "content-type": "application/json" },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTableData(data);
-
-        setPagination((prev) => ({ ...prev, total: 80 }));
-      } else {
-        console.error("Error fetching data:", response.statusText);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  useEffect(() => {
+    dispatch(fetchUsers({ pagination, searchText }));
+  }, [searchText, pagination.current, pagination.pageSize]);
 
   useEffect(() => {
-    fetchData(pagination.current, pagination.pageSize, searchText);
-  }, [pagination.current, pagination.pageSize, searchText]);
+    dispatch(updatePagination(pagination));
+  }, [pagination.current, pagination.pageSize]);
 
   const handleTableChange = (paginationConfig) => {
-    setPagination((prev) => ({
-      ...prev,
+    dispatch(updatePagination(paginationConfig));
+  };
 
-      current: paginationConfig.current,
-      pageSize: paginationConfig.pageSize,
-    }));
-  };
   const handleSearch = (value) => {
-    setSearchText(value);
-    setPagination((prev) => ({
-      ...prev,
-      current: 1,
-    }));
+    dispatch(updateSearchText(value));
+    dispatch(updatePagination({ current: 1 })); 
   };
+
   const handleEdit = async (userId) => {
     try {
       const response = await axios.get(
