@@ -24,17 +24,13 @@ const AntdTable = () => {
     dispatch(fetchUsers({ pagination, searchText }));
   }, [searchText, pagination.current, pagination.pageSize]);
 
-  useEffect(() => {
-    dispatch(updatePagination(pagination));
-  }, [pagination.current, pagination.pageSize]);
-
   const handleTableChange = (paginationConfig) => {
     dispatch(updatePagination(paginationConfig));
   };
 
   const handleSearch = (value) => {
     dispatch(updateSearchText(value));
-    dispatch(updatePagination({ current: 1 })); 
+    dispatch(updatePagination({ current: 1, pageSize: pagination.pageSize })); 
   };
 
   const handleEdit = async (userId) => {
